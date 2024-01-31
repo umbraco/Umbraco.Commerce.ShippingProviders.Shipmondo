@@ -6,11 +6,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\..\Umbraco.Commerce\src\Umbraco.Commerce.Core\Umbraco.Commerce.Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <PackageReference Include="Microsoft.Extensions.Http" />
+      <PackageReference Include="Umbraco.Commerce.Core" />
     </ItemGroup>
 
 </Project>
