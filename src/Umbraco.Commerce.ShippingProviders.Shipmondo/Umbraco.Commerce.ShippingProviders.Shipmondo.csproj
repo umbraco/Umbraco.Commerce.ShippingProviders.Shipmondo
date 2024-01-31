@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <Title>Umbraco Commerce Shipmondo Shipping Provider</Title>
+      <Description>Shipmondo shipping provider for Umbraco Commerce</Description>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Umbraco.Commerce\src\Umbraco.Commerce.Core\Umbraco.Commerce.Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Microsoft.Extensions.Http" />
+    </ItemGroup>
+
+</Project>
