@@ -11,6 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.Extensions.Http" Version="[8.0.0, 9)" />
-    <PackageVersion Include="Umbraco.Commerce.Core" Version="[13.0.0, 14)" />
+    <PackageVersion Include="Umbraco.Commerce.Core" Version="[13.1.0--preview.59, 14)" />
   </ItemGroup>
 </Project>
