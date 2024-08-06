@@ -12,22 +12,13 @@ using Umbraco.Commerce.ShippingProviders.Shipmondo.Api;
 
 namespace Umbraco.Commerce.ShippingProviders.Shipmondo
 {
-    [ShippingProvider("shipmondo", "Shipmondo", "Shipmondo shipping provider")]
-    public class ShipmondoShippingProvider : ShippingProviderBase<ShipmondoSettings>
+    [ShippingProvider("shipmondo")]
+    public class ShipmondoShippingProvider(
+        UmbracoCommerceContext ctx,
+        IHttpClientFactory httpClientFactory,
+        ILogger<ShipmondoShippingProvider> logger)
+        : ShippingProviderBase<ShipmondoSettings>(ctx)
     {
-        private readonly IHttpClientFactory _httpClientFactory;
-        private readonly ILogger<ShipmondoShippingProvider> _logger;
-
-        public ShipmondoShippingProvider(
-            UmbracoCommerceContext ctx,
-            IHttpClientFactory httpClientFactory,
-            ILogger<ShipmondoShippingProvider> logger)
-            : base(ctx)
-        {
-            _httpClientFactory = httpClientFactory;
-            _logger = logger;
-        }
-
         public override bool SupportsRealtimeRates => true;
 
         public override async Task<ShippingRatesResult> GetShippingRatesAsync(ShippingProviderContext<ShipmondoSettings> context, CancellationToken cancellationToken = default)
@@ -36,11 +27,11 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo
 
             if (package == null || !package.HasMeasurements)
             {
-                _logger.Debug("Unable to calculate realtime Shipmondo rates as the package provided is invalid");
+                logger.Debug("Unable to calculate realtime Shipmondo rates as the package provided is invalid");
                 return ShippingRatesResult.Empty;
             }
 
-            var client = ShipmondoClient.Create(_httpClientFactory, context.Settings);
+            var client = ShipmondoClient.Create(httpClientFactory, context.Settings);
 
             var request = new ShipmondoQuoteListRequest
             {

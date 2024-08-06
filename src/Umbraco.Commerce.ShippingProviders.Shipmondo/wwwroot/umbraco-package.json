@@ -1,0 +1,18 @@
+{
+  "id": "Umbraco.Commerce.ShippingProviders.Shipmondo",
+  "name": "Umbraco Commerce Shipping Providers Shipmondo",
+  "version": "14.0.0--preview.0.gdcf1320",
+  "allowPackageTelemetry": true,
+  "extensions": [
+    {
+      "type": "localization",
+      "alias": "Uc.ShippingProviders.Shipmondo.Localization.En",
+      "weight": -100,
+      "name": "English",
+      "meta": {
+        "culture": "en"
+      },
+      "js": "/App_Plugins/UmbracoCommerceShippingProvidersShipmondo/lang/en.js"
+    }
+  ]
+}
