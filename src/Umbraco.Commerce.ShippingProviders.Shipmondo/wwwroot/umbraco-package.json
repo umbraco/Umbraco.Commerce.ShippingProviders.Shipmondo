@@ -1,6 +1,6 @@
 {
   "id": "Umbraco.Commerce.ShippingProviders.Shipmondo",
-  "name": "Umbraco Commerce Shipping Providers Shipmondo",
+  "name": "Shipmondo shipping provider for Umbraco Commerce",
   "version": "14.0.0--preview.0.gdcf1320",
   "allowPackageTelemetry": true,
   "extensions": [
