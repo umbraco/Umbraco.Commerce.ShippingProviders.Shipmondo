@@ -67,8 +67,8 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo
                 Height = (int)Math.Ceiling(h)
             });
 
-            var quotes = await client.GetQuoteListAsync(request, cancellationToken).ConfigureAwait(false);
-            var orderCurrency = Context.Services.CurrencyService.GetCurrency(context.Order.CurrencyId);
+            var quotes = await client.GetQuoteListAsync(request, cancellationToken);
+            var orderCurrency = await Context.Services.CurrencyService.GetCurrencyAsync(context.Order.CurrencyId);
 
             return new ShippingRatesResult
             {
