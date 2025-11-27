@@ -1,0 +1,18 @@
+{
+  "id": "Umbraco.Commerce.ShippingProviders.Shipmondo",
+  "name": "Shipmondo shipping provider for Umbraco Commerce",
+  "version": "17.0.0",
+  "allowPackageTelemetry": true,
+  "extensions": [
+    {
+      "type": "localization",
+      "alias": "Uc.ShippingProviders.Shipmondo.Localization.En",
+      "weight": -100,
+      "name": "English",
+      "meta": {
+        "culture": "en"
+      },
+      "js": "/App_Plugins/UmbracoCommerceShippingProvidersShipmondo/lang/en.js"
+    }
+  ]
+}
