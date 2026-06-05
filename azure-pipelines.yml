@@ -2,7 +2,7 @@ name: $(TeamProject)_$(Build.DefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd
 
 trigger:
   branches:
-    include: 
+    include:
       - dev
       - release/*
       - hotfix/*
@@ -27,7 +27,7 @@ variables:
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
   DOTNET_CLI_TELEMETRY_OPTOUT: true
 
-stages: 
+stages:
   - stage: Build
     variables:
       NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
@@ -142,7 +142,7 @@ stages:
                 }
 
                 Write-Host 'Running cdxgen ...'
-                & cdxgen '--recurse' '--output' "$(Build.ArtifactStagingDirectory)/bom/bom.json" '--json-pretty' '--project-group' 'DXP' '--project-name' $PROJECT_NAME '--project-version' $VERSION '--server-url' $env:DT_BASE_URL '--api-key' $env:DT_API_KEY
+                & cdxgen '--recurse' '--output' "$(Build.ArtifactStagingDirectory)/bom/bom.json" '--json-pretty' '--project-group' 'DXP' '--project-name' $PROJECT_NAME '--project-version' $VERSION '--server-url' $env:DT_BASE_URL '--api-key' $env:DT_API_KEY '--spec-version' 1.6
             env:
               DT_API_KEY: $(DT_API_KEY)
               DT_BASE_URL: $(DT_BASE_URL)
