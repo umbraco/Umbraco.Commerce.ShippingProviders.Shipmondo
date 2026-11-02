@@ -7,6 +7,6 @@ export default {
     'shipmondoSettingsApiKeyLabel': 'API Key',
     'shipmondoSettingsApiKeyDescription': 'The API Key from the Shipmondo portals \'Settings > API Access\' area.',
     'shipmondoSettingsTestModeLabel': 'Test Mode',
-    'shipmondoSettingsTestModeDescription': 'Set whether to run in test mode.',
+    'shipmondoSettingsTestModeDescription': 'Not used: rates always come from the live Shipmondo API.',
   },
 };
