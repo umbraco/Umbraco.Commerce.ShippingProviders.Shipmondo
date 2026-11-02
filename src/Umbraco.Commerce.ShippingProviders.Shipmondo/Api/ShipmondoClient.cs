@@ -17,6 +17,10 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.Api
 {
     public class ShipmondoClient
     {
+        // https://shipmondo.dev/docs/sandbox
+        private const string SandboxBaseAddress = "https://sandbox.shipmondo.com/api/public/v3/";
+        private const string LiveBaseAddress = "https://app.shipmondo.com/api/public/v3/";
+
         private readonly HttpClient _httpClient;
         private readonly ShipmondoSettings _settings;
 
@@ -30,7 +34,7 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.Api
             settings.ApiKey.MustNotBeNullOrWhiteSpace(nameof(settings.ApiKey));
 
             _httpClient = httpClient;
-            _httpClient.BaseAddress = new Uri("https://app.shipmondo.com/api/public/v3/");
+            _httpClient.BaseAddress = new Uri(settings.TestMode ? SandboxBaseAddress : LiveBaseAddress);
             _httpClient.DefaultRequestHeaders.Accept.Clear();
             _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", $"{settings.ApiUser}:{settings.ApiKey}".Base64Encode());

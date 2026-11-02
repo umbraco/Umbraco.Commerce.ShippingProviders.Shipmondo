@@ -24,6 +24,22 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
         }
 
         [Fact]
+        public async Task GetQuoteListAsync_Should_Post_To_The_Sandbox_Api_In_Test_Mode()
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Json("[]"));
+            var settings = CreateSettings();
+            settings.TestMode = true;
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), settings);
+
+            // execution
+            await client.GetQuoteListAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            handler.Requests[0].Uri.Should().Be(new Uri("https://sandbox.shipmondo.com/api/public/v3/quotes/list"));
+        }
+
+        [Fact]
         public async Task GetQuoteListAsync_Should_Send_Basic_Auth_Built_From_ApiUser_And_ApiKey()
         {
             // preparation
