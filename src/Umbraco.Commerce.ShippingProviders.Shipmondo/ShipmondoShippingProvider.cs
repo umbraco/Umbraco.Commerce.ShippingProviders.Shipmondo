@@ -78,7 +78,8 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo
 
         internal static List<ShippingRate> CreateShippingRates(IEnumerable<ShipmondoQuote> quotes, string currencyCode, Guid currencyId, Guid packageId)
             => quotes
-                .Where(x => x.CurrencyCode.Equals(currencyCode, StringComparison.OrdinalIgnoreCase))
+                // A quote without a currency is skipped: its price can't be assumed to be in the order currency
+                .Where(x => x != null && string.Equals(x.CurrencyCode, currencyCode, StringComparison.OrdinalIgnoreCase))
                 .Select(x => new ShippingRate(
                     new Price(x.PriceBeforeVat, x.Price - x.PriceBeforeVat, currencyId),
                     new ShippingOption(CreateCompositeId(x.CarrierCode, x.ProductCode), x.Description),

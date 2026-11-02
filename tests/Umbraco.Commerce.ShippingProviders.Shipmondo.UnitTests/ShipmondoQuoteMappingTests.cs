@@ -99,6 +99,25 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
             rates.Should().BeEmpty();
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void CreateShippingRates_Should_Skip_Quotes_Without_A_Currency(string? currency)
+        {
+            // preparation
+            var quotes = new[]
+            {
+                CreateQuote("gls", "business", currency!),
+                CreateQuote("dao", "pakke", "DKK"),
+            };
+
+            // execution
+            var rates = ShipmondoShippingProvider.CreateShippingRates(quotes, "DKK", CurrencyId, PackageId);
+
+            // asserts
+            rates.Select(x => x.Option.Id).Should().Equal("dao__pakke");
+        }
+
         private static ShipmondoQuote CreateQuote(
             string carrier,
             string product,
