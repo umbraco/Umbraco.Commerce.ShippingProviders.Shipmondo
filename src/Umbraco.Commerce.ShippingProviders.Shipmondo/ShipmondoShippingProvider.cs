@@ -33,54 +33,60 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo
 
             var client = ShipmondoClient.Create(httpClientFactory, context.Settings);
 
-            var request = new ShipmondoQuoteListRequest
-            {
-                Receiver = new ShipmondoAddress
-                {
-                    Address1 = package.ReceiverAddress.AddressLine1,
-                    Address2 = package.ReceiverAddress.AddressLine2,
-                    City = package.ReceiverAddress.City,
-                    ZipCode = package.ReceiverAddress.ZipCode,
-                    CountryCode = package.ReceiverAddress.CountryIsoCode
-                },
-                Sender = new ShipmondoAddress
-                {
-                    Address1 = package.SenderAddress.AddressLine1,
-                    Address2 = package.SenderAddress.AddressLine2,
-                    City = package.SenderAddress.City,
-                    ZipCode = package.SenderAddress.ZipCode,
-                    CountryCode = package.SenderAddress.CountryIsoCode
-                }
-            };
-
-            var l = context.MeasurementSystem == MeasurementSystem.Metric ? package.Length : InToCm(package.Length);
-            var w = context.MeasurementSystem == MeasurementSystem.Metric ? package.Width : InToCm(package.Width);
-            var h = context.MeasurementSystem == MeasurementSystem.Metric ? package.Height : InToCm(package.Height);
-            var wg = context.MeasurementSystem == MeasurementSystem.Metric ? package.Weight : LbToKg(package.Weight);
-
-            request.Parcels.Add(new ShipmondoParcel
-            {
-                Description = context.Order.OrderNumber,
-                Weight = (int)Math.Ceiling(wg * 1000), // Kg to Grams
-                Length = (int)Math.Ceiling(l),
-                Width = (int)Math.Ceiling(w),
-                Height = (int)Math.Ceiling(h)
-            });
+            var request = CreateQuoteRequest(package, context.MeasurementSystem, context.Order.OrderNumber);
 
             var quotes = await client.GetQuoteListAsync(request, cancellationToken);
             var orderCurrency = await Context.Services.CurrencyService.GetCurrencyAsync(context.Order.CurrencyId);
 
             return new ShippingRatesResult
             {
-                Rates = quotes
-                    .Where(x => x.CurrencyCode.Equals(orderCurrency.Code, StringComparison.OrdinalIgnoreCase))
-                    .Select(x => new ShippingRate(
-                            new Price(x.PriceBeforeVat, x.Price - x.PriceBeforeVat, context.Order.CurrencyId),
-                            new ShippingOption(CreateCompositeId(x.CarrierCode, x.ProductCode), x.Description),
-                            package.Id
-                        )).ToList()
+                Rates = CreateShippingRates(quotes, orderCurrency.Code, context.Order.CurrencyId, package.Id)
             };
         }
+
+        internal ShipmondoQuoteListRequest CreateQuoteRequest(Package package, MeasurementSystem measurementSystem, string orderNumber)
+        {
+            var request = new ShipmondoQuoteListRequest
+            {
+                Receiver = CreateAddress(package.ReceiverAddress),
+                Sender = CreateAddress(package.SenderAddress)
+            };
+
+            var l = measurementSystem == MeasurementSystem.Metric ? package.Length : InToCm(package.Length);
+            var w = measurementSystem == MeasurementSystem.Metric ? package.Width : InToCm(package.Width);
+            var h = measurementSystem == MeasurementSystem.Metric ? package.Height : InToCm(package.Height);
+            var wg = measurementSystem == MeasurementSystem.Metric ? package.Weight : LbToKg(package.Weight);
+
+            request.Parcels.Add(new ShipmondoParcel
+            {
+                Description = orderNumber,
+                Weight = (int)Math.Ceiling(wg * 1000), // Kg to Grams
+                Length = (int)Math.Ceiling(l),
+                Width = (int)Math.Ceiling(w),
+                Height = (int)Math.Ceiling(h)
+            });
+
+            return request;
+        }
+
+        internal static List<ShippingRate> CreateShippingRates(IEnumerable<ShipmondoQuote> quotes, string currencyCode, Guid currencyId, Guid packageId)
+            => quotes
+                .Where(x => x.CurrencyCode.Equals(currencyCode, StringComparison.OrdinalIgnoreCase))
+                .Select(x => new ShippingRate(
+                    new Price(x.PriceBeforeVat, x.Price - x.PriceBeforeVat, currencyId),
+                    new ShippingOption(CreateCompositeId(x.CarrierCode, x.ProductCode), x.Description),
+                    packageId
+                )).ToList();
+
+        private static ShipmondoAddress CreateAddress(Address address)
+            => new ShipmondoAddress
+            {
+                Address1 = address.AddressLine1,
+                Address2 = address.AddressLine2,
+                City = address.City,
+                ZipCode = address.ZipCode,
+                CountryCode = address.CountryIsoCode
+            };
 
         private static string CreateCompositeId(string carrierCode, string productCode)
             => $"{carrierCode}__{productCode}".Trim('_');
