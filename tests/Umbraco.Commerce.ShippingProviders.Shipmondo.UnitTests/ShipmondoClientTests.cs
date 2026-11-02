@@ -85,6 +85,89 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
         }
 
         [Theory]
+        [InlineData(HttpStatusCode.Unauthorized, "{\"error\":\"Unauthorized\"}")]
+        [InlineData(HttpStatusCode.UnprocessableEntity, "{\"error\":\"Receiver zipcode is invalid\"}")]
+        [InlineData(HttpStatusCode.BadGateway, "<html>502 Bad Gateway</html>")]
+        [InlineData(HttpStatusCode.ServiceUnavailable, "")]
+        public async Task GetQuoteListResultAsync_Should_Report_Failure_With_Status_And_Body_On_An_Error_Status(HttpStatusCode statusCode, string body)
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Response(statusCode, body));
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), CreateSettings());
+
+            // execution
+            var result = await client.GetQuoteListResultAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(statusCode);
+            result.ErrorDetail.Should().Be(body);
+            result.Quotes.Should().BeEmpty();
+        }
+
+        [Theory]
+        [InlineData("not json")]
+        [InlineData("{\"error\":\"unexpected object\"}")]
+        [InlineData("null")]
+        [InlineData("")]
+        public async Task GetQuoteListResultAsync_Should_Report_Failure_When_A_Success_Body_Is_Not_A_Quote_List(string body)
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Response(HttpStatusCode.OK, body));
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), CreateSettings());
+
+            // execution
+            var result = await client.GetQuoteListResultAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            result.IsSuccess.Should().BeFalse();
+            result.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+
+        [Fact]
+        public async Task GetQuoteListResultAsync_Should_Truncate_A_Long_Error_Body()
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Response(HttpStatusCode.InternalServerError, new string('x', 5000)));
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), CreateSettings());
+
+            // execution
+            var result = await client.GetQuoteListResultAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            result.ErrorDetail.Length.Should().BeLessThan(1100);
+        }
+
+        [Fact]
+        public async Task GetQuoteListResultAsync_Should_Return_The_Quotes_On_Success()
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Json("""[{"carrier_code":"gls","product_code":"business","price":10,"price_before_vat":8,"currency_code":"DKK"}]"""));
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), CreateSettings());
+
+            // execution
+            var result = await client.GetQuoteListResultAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            result.IsSuccess.Should().BeTrue();
+            result.Quotes.Should().ContainSingle().Which.CarrierCode.Should().Be("gls");
+        }
+
+        [Fact]
+        public async Task GetQuoteListAsync_Should_Throw_An_HttpRequestException_With_The_Status_On_An_Error_Status()
+        {
+            // preparation
+            using var handler = new StubHandler(_ => Response(HttpStatusCode.Unauthorized, "{\"error\":\"Unauthorized\"}"));
+            var client = ShipmondoClient.Create(new StubHttpClientFactory(handler), CreateSettings());
+
+            // execution
+            Func<Task> act = () => client.GetQuoteListAsync(new ShipmondoQuoteListRequest());
+
+            // asserts
+            (await act.Should().ThrowAsync<HttpRequestException>()).Which.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        }
+
+        [Theory]
         [InlineData(null, "key")]
         [InlineData("", "key")]
         [InlineData("   ", "key")]
@@ -205,6 +288,9 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
 
         private static HttpResponseMessage Json(string body)
             => new(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+
+        private static HttpResponseMessage Response(HttpStatusCode statusCode, string body)
+            => new(statusCode) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 
         private sealed class StubHttpClientFactory(HttpMessageHandler handler) : IHttpClientFactory
         {

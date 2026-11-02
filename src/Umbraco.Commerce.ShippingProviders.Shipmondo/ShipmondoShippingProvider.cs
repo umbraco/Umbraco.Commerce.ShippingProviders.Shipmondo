@@ -35,12 +35,19 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo
 
             var request = CreateQuoteRequest(package, context.MeasurementSystem, context.Order.OrderNumber);
 
-            var quotes = await client.GetQuoteListAsync(request, cancellationToken);
+            var result = await client.GetQuoteListResultAsync(request, cancellationToken);
+
+            if (!result.IsSuccess)
+            {
+                logger.Error("Failed to get Shipmondo realtime rates: HTTP {Status} {Detail}", (int)result.StatusCode, result.ErrorDetail);
+                return ShippingRatesResult.Empty;
+            }
+
             var orderCurrency = await Context.Services.CurrencyService.GetCurrencyAsync(context.Order.CurrencyId);
 
             return new ShippingRatesResult
             {
-                Rates = CreateShippingRates(quotes, orderCurrency.Code, context.Order.CurrencyId, package.Id)
+                Rates = CreateShippingRates(result.Quotes, orderCurrency.Code, context.Order.CurrencyId, package.Id)
             };
         }
 
