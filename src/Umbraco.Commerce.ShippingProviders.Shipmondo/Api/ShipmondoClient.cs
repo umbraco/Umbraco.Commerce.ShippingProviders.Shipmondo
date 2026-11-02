@@ -225,17 +225,21 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.Api
         // dangerous_goods
 
         [JsonPropertyName("declared_value")]
-        public ShimpondoPrice DeclaredValue { get; set; }
+        public ShipmondoPrice DeclaredValue { get; set; }
     }
 
-    public class ShimpondoPrice
+    public class ShipmondoPrice
     {
-
         [JsonPropertyName("amount")]
         public decimal Amount { get; set; }
 
         [JsonPropertyName("currency_code")]
         public string CurrencyCode { get; set; }
+    }
+
+    [Obsolete("Use ShipmondoPrice instead. Will be removed in v21.0.0")]
+    public class ShimpondoPrice : ShipmondoPrice
+    {
     }
 
     internal static class HttpClientExtensions

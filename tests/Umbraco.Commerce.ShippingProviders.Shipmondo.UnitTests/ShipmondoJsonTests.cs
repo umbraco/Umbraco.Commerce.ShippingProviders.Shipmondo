@@ -22,7 +22,7 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
                 Length = 10,
                 Width = 20,
                 Height = 30,
-                DeclaredValue = new ShimpondoPrice { Amount = 12.5m, CurrencyCode = "DKK" }
+                DeclaredValue = new ShipmondoPrice { Amount = 12.5m, CurrencyCode = "DKK" }
             });
 
             // execution
@@ -48,6 +48,26 @@ namespace Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests
             parcel.TryGetProperty("quantity", out _).Should().BeTrue();
             parcel.GetProperty("declared_value").GetProperty("amount").GetDecimal().Should().Be(12.5m);
             parcel.GetProperty("declared_value").GetProperty("currency_code").GetString().Should().Be("DKK");
+        }
+
+        [Fact]
+        public void ShimpondoPrice_Should_Be_An_Obsolete_ShipmondoPrice_That_Serializes_The_Same()
+        {
+            // preparation
+            // Reflection keeps the obsolete type out of the compiled test code (no CS0618)
+            var obsoleteType = typeof(ShipmondoPrice).Assembly.GetType("Umbraco.Commerce.ShippingProviders.Shipmondo.Api.ShimpondoPrice")!;
+            var price = (ShipmondoPrice)Activator.CreateInstance(obsoleteType)!;
+            price.Amount = 12.5m;
+            price.CurrencyCode = "DKK";
+
+            // execution
+            using var doc = JsonDocument.Parse(JsonSerializer.Serialize(new ShipmondoParcel { DeclaredValue = price }));
+
+            // asserts
+            obsoleteType.IsSubclassOf(typeof(ShipmondoPrice)).Should().BeTrue();
+            obsoleteType.GetCustomAttributes(typeof(ObsoleteAttribute), false).Should().ContainSingle();
+            doc.RootElement.GetProperty("declared_value").GetProperty("amount").GetDecimal().Should().Be(12.5m);
+            doc.RootElement.GetProperty("declared_value").GetProperty("currency_code").GetString().Should().Be("DKK");
         }
 
         [Fact]
