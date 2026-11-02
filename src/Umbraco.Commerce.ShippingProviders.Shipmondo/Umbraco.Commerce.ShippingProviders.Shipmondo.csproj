@@ -13,6 +13,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <InternalsVisibleTo Include="Umbraco.Commerce.ShippingProviders.Shipmondo.UnitTests" />
+    </ItemGroup>
+
+    <ItemGroup>
       <SupportedPlatform Include="browser" />
     </ItemGroup>
 
